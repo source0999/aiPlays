@@ -24,8 +24,21 @@ def test_manual_ticks_do_not_consume_episode_steps() -> None:
     backend = FakeBackend()
     env = PyBoyEnv(config, backend_factory=lambda: backend)
     env.reset(seed=7)
-    env.manual_tick()
+    running, _ = env.manual_tick()
+    assert running
     assert backend.ticks == 1
     assert env.steps == 0
     assert backend.events == []
+    env.close()
+
+
+def test_manual_tick_detects_a_closed_window() -> None:
+    config = load_config("configs/pokemon_red.yaml")
+    config.game.state_path = None
+    backend = FakeBackend()
+    env = PyBoyEnv(config, backend_factory=lambda: backend)
+    env.reset(seed=7)
+    backend.running = False
+    running, _ = env.manual_tick()
+    assert not running
     env.close()

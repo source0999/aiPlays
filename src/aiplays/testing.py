@@ -17,11 +17,12 @@ class FakeBackend:
         self.events: list[tuple[str, str]] = []
         self.ticks = 0
         self.stopped = False
+        self.running = True
 
     def tick(self) -> bool:
         self.ticks += 1
         self.screen.ndarray[..., 0] = self.ticks % 255
-        return True
+        return self.running
 
     def button_press(self, input: str) -> None:
         self.events.append(("press", input))

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.metadata
+import signal
 import socket
 import sys
 from pathlib import Path
@@ -103,10 +104,19 @@ def doctor(config: AppConfig, require_rom: bool) -> int:
 
 def manual(config: AppConfig, verify_ram: bool = False, speed: int | None = None) -> int:
     env = PyBoyEnv(config, render_mode="human")
+    stop_requested = False
+    previous_handler = signal.getsignal(signal.SIGINT)
+
+    def request_stop(signum: int, frame: object) -> None:
+        nonlocal stop_requested
+        del signum, frame
+        stop_requested = True
+
     try:
         _, info = env.reset(seed=config.training.seed)
         manual_speed = 1 if speed is None else speed
         env.set_emulation_speed(manual_speed)
+        signal.signal(signal.SIGINT, request_stop)
         print(
             "Window open at "
             f"{manual_speed}x speed. PyBoy SDL2 receives keyboard controls directly; "
@@ -117,15 +127,18 @@ def manual(config: AppConfig, verify_ram: bool = False, speed: int | None = None
             "PyBoy reserves Z to save and X to load its optional <rom>.state sidecar."
         )
         frame_count = 0
-        while True:
-            info = env.manual_tick()
+        while not stop_requested:
+            running, info = env.manual_tick()
+            if not running:
+                print("PyBoy window closed.")
+                break
             frame_count += 1
             if verify_ram and frame_count % 30 == 0:
                 print(info.get("ram", {}), end="\r")
-    except KeyboardInterrupt:
-        return 0
     finally:
+        signal.signal(signal.SIGINT, previous_handler)
         env.close()
+    return 0
 
 
 def watch(config: AppConfig, model_path: Path | None, stochastic: bool, episodes: int) -> int:

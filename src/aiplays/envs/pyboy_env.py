@@ -142,12 +142,11 @@ class PyBoyEnv(gym.Env[Any, Any]):
             return None
         return framebuffer(self.backend) if self.render_mode == "rgb_array" else None
 
-    def manual_tick(self) -> dict[str, Any]:
+    def manual_tick(self) -> tuple[bool, dict[str, Any]]:
         """Advance one PyBoy frame without taking an RL action or consuming an episode step."""
         if self.backend is None or self.closed:
             raise RuntimeError("Call reset() before manual_tick()")
-        self.backend.tick()
-        return self._info()
+        return bool(self.backend.tick()), self._info()
 
     def set_emulation_speed(self, speed: int) -> None:
         """Set a PyBoy speed when supported; fake test backends need not implement it."""
