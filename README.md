@@ -36,7 +36,7 @@ If your name/path differs, change `game.rom_path` in `configs\pokemon_red.yaml` 
 
 ## Everyday workflow
 
-Manual play opens PyBoy’s visible SDL2 window. Its normal keyboard input reaches the emulator; use its close control or Ctrl+C to leave cleanly.
+Manual play opens PyBoy’s visible SDL2 window and lets its normal keyboard handling run directly. It does not invoke the RL action loop, frame skip, or episode limit. Manual mode defaults to 1x speed even when headless training uses `speed: 0`; pass `--speed 0` only when you explicitly want unlimited speed.
 
 ```powershell
 .\scripts\manual-play.ps1
