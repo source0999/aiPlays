@@ -24,6 +24,17 @@ def _config_argument(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def _tab_is_held() -> bool:
+    """Read Tab after PyBoy pumps SDL events; unavailable SDL simply means no turbo."""
+    try:
+        import sdl2
+
+        keyboard = sdl2.SDL_GetKeyboardState(None)
+        return bool(keyboard[sdl2.SDL_SCANCODE_TAB])
+    except (ImportError, AttributeError):
+        return False
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="aiplays", description="Local Game Boy RL with PyBoy and PPO"
@@ -124,14 +135,21 @@ def manual(config: AppConfig, verify_ram: bool = False, speed: int | None = None
         )
         print(
             "Controls: arrows = D-pad, A = A, S = B, Enter = Start, Backspace = Select. "
-            "PyBoy reserves Z to save and X to load its optional <rom>.state sidecar."
+            "Hold Tab for turbo. PyBoy reserves Z to save and X to load its optional "
+            "<rom>.state sidecar."
         )
         frame_count = 0
+        turbo_active = False
         while not stop_requested:
             running, info = env.manual_tick()
             if not running:
                 print("PyBoy window closed.")
                 break
+            tab_held = _tab_is_held()
+            if manual_speed != 0 and tab_held != turbo_active:
+                turbo_active = tab_held
+                env.set_emulation_speed(0 if turbo_active else manual_speed)
+                print("Turbo enabled." if turbo_active else "Turbo disabled.")
             frame_count += 1
             if verify_ram and frame_count % 30 == 0:
                 print(info.get("ram", {}), end="\r")
