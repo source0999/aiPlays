@@ -112,6 +112,10 @@ def manual(config: AppConfig, verify_ram: bool = False, speed: int | None = None
             f"{manual_speed}x speed. PyBoy SDL2 receives keyboard controls directly; "
             "close its window or press Ctrl+C to exit."
         )
+        print(
+            "Controls: arrows = D-pad, A = A, S = B, Enter = Start, Backspace = Select. "
+            "PyBoy reserves Z to save and X to load its optional <rom>.state sidecar."
+        )
         frame_count = 0
         while True:
             info = env.manual_tick()
