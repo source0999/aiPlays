@@ -62,7 +62,7 @@ python -m aiplays dashboard
 python -m aiplays verify-ram --config configs\pokemon_red.yaml
 ```
 
-Resume with `python -m aiplays train --config configs\pokemon_red.yaml --resume models\latest.zip`. Interrupted runs save a final model; checkpoints are written per run and atomically copied to `models\latest.zip`. TensorBoard event files go under `logs`; run `.​.venv\Scripts\tensorboard.exe --logdir .\logs`.
+Resume with `python -m aiplays train --config configs\pokemon_red.yaml --resume models\latest.zip`. Interrupted runs save a final model; checkpoints are written per run and atomically copied to `models\latest.zip`. TensorBoard event files go under `logs`; run `.\.venv\Scripts\tensorboard.exe --logdir .\logs`.
 
 ## Configuration and rewards
 
