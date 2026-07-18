@@ -1,0 +1,9 @@
+# Pokemon-specific signals are conservative; verify-ram before enabling uncertain fields.
+weights:
+  new_coordinate: 0.1
+  new_map: 1.0
+  badge: 10.0
+  party_level: 0.2
+  step: -0.001
+  stuck: -0.01
+  blackout: -5.0

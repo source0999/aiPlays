@@ -1,0 +1,7 @@
+# ROM-independent reward profile.
+weights:
+  new_coordinate: 0.1
+  screen_novelty: 0.02
+  step: -0.001
+  stuck: -0.01
+  repeated_state: -0.002
