@@ -36,7 +36,7 @@ If your name/path differs, change `game.rom_path` in `configs\pokemon_red.yaml` 
 
 ## Everyday workflow
 
-Manual play opens PyBoy’s visible SDL2 window and lets its normal keyboard handling run directly. It does not invoke the RL action loop, frame skip, or episode limit. Manual mode defaults to 1x speed even when headless training uses `speed: 0`; hold Tab for temporary unlimited-speed turbo, or pass `--speed 0` when you explicitly want it all the time.
+Manual play opens PyBoy’s visible SDL2 window and lets its normal keyboard handling run directly. It does not invoke the RL action loop, frame skip, or episode limit. Manual mode defaults to 1x speed even when headless training uses `speed: 0`; press Tab to toggle unlimited-speed turbo, or pass `--speed 0` when you explicitly want it all the time.
 
 In-game Pokemon saves are battery-backed and persist in `roms\pokemon_red.gb.ram` when PyBoy exits cleanly. This is distinct from PyBoy's `Z`/`X` emulator snapshot shortcuts, which use `pokemon_red.gb.state`. Loading an old `.state` can overwrite newer in-game progress, so avoid `X` unless you intentionally want that snapshot.
 

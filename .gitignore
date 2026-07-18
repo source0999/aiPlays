@@ -12,6 +12,7 @@ htmlcov/
 *.gba
 *.rom
 *.state
+*.state.*
 *.sav
 *.srm
 *.ram

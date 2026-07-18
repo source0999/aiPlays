@@ -5,6 +5,8 @@ import importlib.metadata
 import signal
 import socket
 import sys
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 import psutil
@@ -24,15 +26,24 @@ def _config_argument(parser: argparse.ArgumentParser) -> None:
     )
 
 
-def _tab_is_held() -> bool:
-    """Read Tab after PyBoy pumps SDL events; unavailable SDL simply means no turbo."""
-    try:
-        import sdl2
+@contextmanager
+def _manual_tab_turbo_mapping() -> Iterator[None]:
+    """Map Tab to PyBoy's native speed toggle for the lifetime of manual play."""
+    import sdl2
+    from pyboy.plugins import window_sdl2
+    from pyboy.utils import WindowEvent
 
-        keyboard = sdl2.SDL_GetKeyboardState(None)
-        return bool(keyboard[sdl2.SDL_SCANCODE_TAB])
-    except (ImportError, AttributeError):
-        return False
+    tab = sdl2.SDLK_TAB
+    missing = object()
+    previous = window_sdl2.KEY_UP.get(tab, missing)
+    window_sdl2.KEY_UP[tab] = WindowEvent.RELEASE_SPEED_UP
+    try:
+        yield
+    finally:
+        if previous is missing:
+            del window_sdl2.KEY_UP[tab]
+        else:
+            window_sdl2.KEY_UP[tab] = previous
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -135,24 +146,19 @@ def manual(config: AppConfig, verify_ram: bool = False, speed: int | None = None
         )
         print(
             "Controls: arrows = D-pad, A = A, S = B, Enter = Start, Backspace = Select. "
-            "Hold Tab for turbo. PyBoy reserves Z to save and X to load its optional "
+            "Press Tab to toggle turbo. PyBoy reserves Z to save and X to load its optional "
             "<rom>.state sidecar."
         )
         frame_count = 0
-        turbo_active = False
-        while not stop_requested:
-            running, info = env.manual_tick()
-            if not running:
-                print("PyBoy window closed.")
-                break
-            tab_held = _tab_is_held()
-            if manual_speed != 0 and tab_held != turbo_active:
-                turbo_active = tab_held
-                env.set_emulation_speed(0 if turbo_active else manual_speed)
-                print("Turbo enabled." if turbo_active else "Turbo disabled.")
-            frame_count += 1
-            if verify_ram and frame_count % 30 == 0:
-                print(info.get("ram", {}), end="\r")
+        with _manual_tab_turbo_mapping():
+            while not stop_requested:
+                running, info = env.manual_tick()
+                if not running:
+                    print("PyBoy window closed.")
+                    break
+                frame_count += 1
+                if verify_ram and frame_count % 30 == 0:
+                    print(info.get("ram", {}), end="\r")
     finally:
         signal.signal(signal.SIGINT, previous_handler)
         env.close()
